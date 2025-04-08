@@ -1,5 +1,4 @@
 class BooksController < ApplicationController
-
   def index
     books = Book.all
     render json: books
@@ -30,13 +29,13 @@ class BooksController < ApplicationController
       render json: { errors: book.errors.full_messages }, status: :unprocessable_entity
     end
   end
-  
+
   def destroy
     # find method raises an exception. Use find_by which returns nil
-    # if you use find method, then if the book is not there, that error json wont be shown. 
+    # if you use find method, then if the book is not there, that error json wont be shown.
     # Instead it will raise an ActiveRecord::RecordNotFound exception. Either you use find_by method
     # or put it inside a rescue block instead of the if else block.
-    book = Book.find(id: params[:id]) 
+    book = Book.find(id: params[:id])
 
     book.destroy
     head :no_content # This is used to send back a success response with no response body
@@ -47,7 +46,7 @@ class BooksController < ApplicationController
   private
 
   def book_params
-    params.permit(:title, 
+    params.permit(:title,
                   :description,
                   :pdf_file,
                   :pages,
