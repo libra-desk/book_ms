@@ -5,7 +5,7 @@ class ApplicationController < ActionController::API
 
   # This basically cross checks the token to verify that it is a genuine request
   def authenticate_request
-    token = request.headers['Authorization']
+    token = request.headers["Authorization"]
     decoded_value = JsonWebToken.decode(token)
     @current_user = decoded_value ? decoded_value : nil
 
