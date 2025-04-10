@@ -14,4 +14,8 @@ class ApplicationController < ActionController::API
              status: :unauthorized
     end
   end
+
+  def current_user
+    @current_user
+  end
 end
