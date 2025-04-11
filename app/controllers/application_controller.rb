@@ -10,8 +10,7 @@ class ApplicationController < ActionController::API
     @current_user = decoded_value ? decoded_value : nil
 
     unless @current_user
-      render json: { error: "Unauthorized request" },
-             status: :unauthorized
+      render json: { error: "Unauthorized request" }
     end
   end
 
