@@ -9,7 +9,8 @@ class BooksController < ApplicationController
         description: book.description,
         pages: book.pages,
         isbn: book.isbn,
-        pdf_file: book.pdf_file.attached? ? url_for(book.pdf_file) : nil
+        pdf_file: book.pdf_file.attached? ? url_for(book.pdf_file) : nil,
+        available: book.available
       }
     }
   end
@@ -40,7 +41,7 @@ class BooksController < ApplicationController
         pdf_file: book.pdf_file.attached? ? url_for(book.pdf_file) : nil
       }, status: :created
     else
-      render json: { errors: book.errors.full_messages }, status: :unprocessable_entity
+      head :unprocessable_entity
     end
   end
 
@@ -57,7 +58,7 @@ class BooksController < ApplicationController
         pdf_file: book.pdf_file.attached? ? url_for(book.pdf_file) : nil
       }
     else
-      render json: { errors: book.errors.full_messages }, status: :unprocessable_entity
+      head :unprocessable_entity
     end
   end
 
@@ -71,7 +72,43 @@ class BooksController < ApplicationController
     book.destroy
     head :no_content # This is used to send back a success response with no response body
   rescue ActiveRecord::RecordNotFound
-    render json: { error: "Book not found!" }, status: :not_found
+    head :not_found
+  end
+
+  def borrow_book
+    book = Book.find_by(id: params[:id])
+    debugger
+    if book
+      book.update(available: false)
+      head :ok
+    else
+      head :not_found
+    end
+  end
+
+  def return_book
+    book = Book.find_by(id: params[:book_id])
+    if book
+      book.update(available: true)
+      head :ok
+    else
+      head :not_found
+    end
+  end
+
+  def borrowed_books_list
+    books = Book.where(id: params[:book_ids],
+                       available: false).map do |book|
+      {
+        id: book.id,
+        title: book.title,
+        description: book.description,
+        pages: book.pages,
+        isbn: book.isbn
+        # pdf_file: url_for(book.pdf_file),
+      }
+    end
+    render json: books
   end
 
   private
