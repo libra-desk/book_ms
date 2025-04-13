@@ -1,9 +1,9 @@
 require 'kafka'
 
-class BookBorrowedListener
-  def initialize
+class KafkaConsumer
+  def initialize(topic:)
     @kafka = Kafka.new(["127.0.0.1:9092"], client_id: "book-ms")
-    @topic = "book_borrowed"
+    @topic = topic
     @group_id = "book-ms-consumer"
   end
 
@@ -30,8 +30,8 @@ class BookBorrowedListener
     book = Book.find_by(id: book_id)
 
     if book
-      book.update(available: false)
-      puts "Book has been borrowed"
+      book.update(available: payload['available'])
+      puts "Availability updated to #{payload['available']}"
     else
       puts "Book not found mister"
     end

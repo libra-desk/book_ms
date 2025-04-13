@@ -75,27 +75,6 @@ class BooksController < ApplicationController
     head :not_found
   end
 
-  def borrow_book
-    book = Book.find_by(id: params[:id])
-    debugger
-    if book
-      book.update(available: false)
-      head :ok
-    else
-      head :not_found
-    end
-  end
-
-  def return_book
-    book = Book.find_by(id: params[:book_id])
-    if book
-      book.update(available: true)
-      head :ok
-    else
-      head :not_found
-    end
-  end
-
   def borrowed_books_list
     books = Book.where(id: params[:book_ids],
                        available: false).map do |book|
