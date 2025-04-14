@@ -1,18 +1,24 @@
 class BooksController < ApplicationController
   def index
-    books = Book.includes(pdf_file_attachment: :blob).all
+    Rails.logger.info("Fetching from db or cache. Lets see")
+    cached_books = Rails.cache.fetch("all_books") do 
+      Rails.logger.info("Cache miss")
+      books = Book.includes(pdf_file_attachment: :blob).all
 
-    render json: books.map { |book|
-      {
-        id: book.id,
-        title: book.title,
-        description: book.description,
-        pages: book.pages,
-        isbn: book.isbn,
-        pdf_file: book.pdf_file.attached? ? url_for(book.pdf_file) : nil,
-        available: book.available
-      }
-    }
+      books.map { |book|
+        {
+          id: book.id,
+          title: book.title,
+          description: book.description,
+          pages: book.pages,
+          isbn: book.isbn,
+          pdf_file: book.pdf_file.attached? ? url_for(book.pdf_file) : nil,
+          available: book.available
+        }
+      }.to_json
+    end
+
+    render json: cached_books
   end
 
   def show
@@ -32,6 +38,8 @@ class BooksController < ApplicationController
     book = Book.new(book_params)
 
     if book.save
+      Rails.cache.delete("all_books")
+
       render json: {
         id: book.id,
         title: book.title,
@@ -49,6 +57,8 @@ class BooksController < ApplicationController
     book = Book.find(params[:id])
 
     if book.update(book_params)
+      Rails.cache.delete("all_books")
+
       render json: {
         id: book.id,
         title: book.title,
@@ -70,6 +80,7 @@ class BooksController < ApplicationController
     book = Book.find_by(id: params[:id])
 
     book.destroy
+    Rails.cache.delete("all_books")
     head :no_content # This is used to send back a success response with no response body
   rescue ActiveRecord::RecordNotFound
     head :not_found
